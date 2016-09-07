@@ -269,12 +269,9 @@ extension ActivityStreamPanel {
     private func invalidateTopSites() -> Deferred<Maybe<[TopSiteItem]>> {
         let frecencyLimit = ASPanelUX.topSitesCacheSize
         return self.profile.history.updateTopSitesCacheIfInvalidated() >>== { dirty in
-            if dirty || self.topSites.isEmpty {
-                return self.profile.history.getTopSitesWithLimit(frecencyLimit) >>== { topSites in
-                    return deferMaybe(topSites.flatMap(self.siteToItem))
-                }
+            return self.profile.history.getTopSitesWithLimit(frecencyLimit) >>== { topSites in
+                return deferMaybe(topSites.flatMap(self.siteToItem))
             }
-            return deferMaybe(self.topSites)
         }
     }
 
@@ -282,8 +279,10 @@ extension ActivityStreamPanel {
         guard let host = siteURL.normalizedHost() else {
             return
         }
+
         profile.history.removeHostFromTopSites(host).uponQueue(dispatch_get_main_queue()) { result in
             guard result.isSuccess else { return }
+            self.reloadTopSites()
         }
     }
 

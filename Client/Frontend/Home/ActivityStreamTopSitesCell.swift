@@ -444,21 +444,7 @@ class ASHorizontalScrollCellManager: NSObject, UICollectionViewDelegate, UIColle
 
     func collectionView(collectionView: UICollectionView, deleteItemAtIndexPath indexPath: NSIndexPath) {
         let contentItem = self.content[indexPath.row]
-        let preDeleteSize = content.count
-
-        // Delete the item from the DB
         self.deleteItemHandler?(contentItem.siteURL)
-
-        // Delete the item from the current data source and animate the change
-        collectionView.performBatchUpdates({
-            self.content = self.content.filter {$0 != contentItem}
-            // There are alwaays some weird timing issues related to the underlying content changing before we can delete.
-            // To prevent issues make sure ONLY one item was removed before doing any animations
-            if preDeleteSize - 1 != self.content.count {
-                return
-            }
-            collectionView.deleteItemsAtIndexPaths([indexPath])
-            }, completion: nil)
     }
 
 }
