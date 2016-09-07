@@ -294,6 +294,23 @@ extension ActivityStreamPanel {
         }
         return TopSiteItem(urlTitle: site.tileURL.extractDomainName(), faviconURL: NSURL(string: faviconURL)!, siteURL: site.tileURL)
     }
+
+    private func populateFirstLaunchTopSites() -> [TopSiteItem] {
+        let arr = SuggestedSites.asArray()
+        return arr.map {(siteA) -> TopSiteItem in
+            let asset =  siteA.wordmark.url.stringByReplacingOccurrencesOfString("asset://", withString: "")
+            let topSite = TopSiteItem(urlTitle: siteA.title, faviconURL: nil, siteURL: siteA.tileURL, faviconImagePath: asset)
+            return topSite
+        }
+        /*
+         So if topsites is empty check a flag to see if we have tried inserting into topsites before. If not lets add some default topsites to the user's topsites
+         can i just insert a site into the Site db? That would be the simplist. 
+         map over the default top sites and create a map of Sites. 
+         insert it into the topsites somehow.
+         reload the table. we should see all the topsites
+         we need sd_webimageview to be able to load with fileurls
+         */
+    }
 }
 
 // MARK: - Section Header View
