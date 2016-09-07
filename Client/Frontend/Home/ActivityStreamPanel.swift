@@ -250,7 +250,11 @@ extension ActivityStreamPanel {
     private func reloadTopSites() {
         invalidateTopSites().uponQueue(dispatch_get_main_queue()) { result in
             let sites = result.successValue ?? []
-            self.topSites = sites
+            let defaultSites = self.defaultTopSites()
+            let deDuped = sites.filter {!defaultSites.contains($0, f: {
+                return $0.urlTitle.lowercaseString == $1.urlTitle.lowercaseString
+            })}
+            self.topSites = deDuped + defaultSites
             self.topSitesManager.currentTraits = self.view.traitCollection
             self.topSitesManager.content = self.topSites
             self.topSitesManager.urlPressedHandler = { [unowned self] url in
@@ -295,21 +299,16 @@ extension ActivityStreamPanel {
         return TopSiteItem(urlTitle: site.tileURL.extractDomainName(), faviconURL: NSURL(string: faviconURL)!, siteURL: site.tileURL)
     }
 
-    private func populateFirstLaunchTopSites() -> [TopSiteItem] {
-        let arr = SuggestedSites.asArray()
-        return arr.map {(siteA) -> TopSiteItem in
+    private func defaultTopSites() -> [TopSiteItem] {
+        let suggested = SuggestedSites.asArray()
+        let deleted = profile.prefs.arrayForKey("topSites.deletedSuggestedSites") as? [String] ?? []
+
+        return suggested.map {(siteA) -> TopSiteItem in
             let asset =  siteA.wordmark.url.stringByReplacingOccurrencesOfString("asset://", withString: "")
-            let topSite = TopSiteItem(urlTitle: siteA.title, faviconURL: nil, siteURL: siteA.tileURL, faviconImagePath: asset)
-            return topSite
+            return TopSiteItem(urlTitle: siteA.title, faviconURL: nil, siteURL: siteA.tileURL, faviconImagePath: asset)
+        }.filter {
+            return deleted.indexOf($0.urlTitle) == .None
         }
-        /*
-         So if topsites is empty check a flag to see if we have tried inserting into topsites before. If not lets add some default topsites to the user's topsites
-         can i just insert a site into the Site db? That would be the simplist. 
-         map over the default top sites and create a map of Sites. 
-         insert it into the topsites somehow.
-         reload the table. we should see all the topsites
-         we need sd_webimageview to be able to load with fileurls
-         */
     }
 }
 
