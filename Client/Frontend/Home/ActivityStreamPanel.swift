@@ -279,7 +279,6 @@ extension ActivityStreamPanel {
         guard let host = siteURL.normalizedHost() else {
             return
         }
-
         profile.history.removeHostFromTopSites(host).uponQueue(dispatch_get_main_queue()) { result in
             guard result.isSuccess else { return }
             self.reloadTopSites()
@@ -290,11 +289,9 @@ extension ActivityStreamPanel {
         guard let site = site else {
             return nil
         }
-
         guard let faviconURL = site.icon?.url else {
             return TopSiteItem(urlTitle: site.tileURL.extractDomainName(), faviconURL: nil, siteURL: site.tileURL)
         }
-
         return TopSiteItem(urlTitle: site.tileURL.extractDomainName(), faviconURL: NSURL(string: faviconURL)!, siteURL: site.tileURL)
     }
 }
